@@ -1,0 +1,9 @@
+# One CurseForge Project ID per line. Lines starting with # are ignored.
+# Find the Project ID on the addon's curseforge.com page, right sidebar under "About Project".
+
+1477613 # EllesmereUI
+267285 # AllTheThings
+19406 # Opie
+
+# These addons cannot be auto-downloaded due to author settings, but will still be checked for updates
+1592 # Bagnon
