@@ -23,6 +23,27 @@ fi
 
 [[ -f "$STATE_FILE" ]] || echo '{}' > "$STATE_FILE"
 
+# Auto-detect addons already installed (e.g. dropped in by hand) that aren't
+# tracked yet, by reading the Project ID CurseForge stamps into their .toc.
+declare -A known_ids
+while IFS= read -r line; do
+    line="${line%%#*}"
+    id="$(echo "$line" | xargs)"
+    [[ -n "$id" ]] && known_ids["$id"]=1
+done < "$ADDONS_FILE"
+
+shopt -s nullglob
+declare -A seen_new_ids
+for toc in "$ADDONS_DIR"/*/*.toc; do
+    pid=$(grep -im1 "curse-project-id" "$toc" | grep -oE "[0-9]+" || true)
+    [[ -z "$pid" ]] && continue
+    [[ -n "${known_ids[$pid]:-}" || -n "${seen_new_ids[$pid]:-}" ]] && continue
+    seen_new_ids["$pid"]=1
+    new_name=$(curl -s -H "x-api-key: $API_KEY" "$API/mods/$pid" | jq -r '.data.name')
+    echo "$pid # $new_name" >> "$ADDONS_FILE"
+    echo "[$new_name] new addon detected in AddOns, added to addon-list (id $pid)"
+done
+
 while IFS= read -r line; do
     line="${line%%#*}"
     id="$(echo "$line" | xargs)"

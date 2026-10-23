@@ -36,8 +36,10 @@ For each addon in `addon-list`, this checks the latest Retail file and:
   author has disabled third-party API downloads (you'll need to grab that
   one manually)
 
-It also installs and deletes any `.zip` files sitting in this directory, for
-addons downloaded manually.
+For each `.zip` file in the same directory as the script, it will install
+the addon and attempt to add its profile ID to the addon-list file if
+the profile ID is present in the `.zip` file. If the addon is installed
+successfully, the `.zip` file will be deleted.
 
 ## Files
 
