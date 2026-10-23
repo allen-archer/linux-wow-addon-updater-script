@@ -1,7 +1,8 @@
 # WoW Addon Updater
 
 Updates WoW addons from CurseForge via the CFCore API, since Linux addon managers
-tend to be unreliable.
+tend to be unreliable. It will also install and update addons from `.zip` files
+present in the same directory as the script.
 
 ## Setup
 
@@ -36,10 +37,11 @@ For each addon in `addon-list`, this checks the latest Retail file and:
   author has disabled third-party API downloads (you'll need to grab that
   one manually)
 
-For each `.zip` file in the same directory as the script, it will install
-the addon and attempt to add its profile ID to the addon-list file if
-the profile ID is present in the `.zip` file. If the addon is installed
-successfully, the `.zip` file will be deleted.
+For each `.zip` file in the same directory as the script:
+- installs/updates the addon
+- attempts to add its profile ID to the addon-list file if
+the profile ID is present in the `.zip` file
+- deletes the `.zip` if successfully installed/updated
 
 ## Files
 
