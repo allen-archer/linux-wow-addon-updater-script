@@ -13,7 +13,17 @@ source "$DIR/config"
 API_KEY="$(tr -d '\n' < "$DIR/api-key")"
 ADDONS_FILE="$DIR/addon-list"
 STATE_FILE="$DIR/installed-versions.json"
-RETAIL_TYPE_ID=517
+case "${FLAVOR:-retail}" in
+    retail)  GAME_VERSION_TYPE_ID=517 ;;
+    forever) GAME_VERSION_TYPE_ID=88568 ;;
+    classic) GAME_VERSION_TYPE_ID=67408 ;;
+    tbc)     GAME_VERSION_TYPE_ID=73246 ;;
+    wrath)   GAME_VERSION_TYPE_ID=73713 ;;
+    wrath-titan) GAME_VERSION_TYPE_ID=81212 ;;
+    cata)    GAME_VERSION_TYPE_ID=77522 ;;
+    mop)     GAME_VERSION_TYPE_ID=79434 ;;
+    *) echo "Unknown FLAVOR '$FLAVOR' in config (use retail, forever, classic, tbc, wrath, wrath-titan, cata or mop)" >&2; exit 1 ;;
+esac
 API="https://api.curseforge.com/v1"
 
 if [[ ! -d "$ADDONS_DIR" ]]; then
@@ -53,11 +63,11 @@ while IFS= read -r line; do
     mod_name=$(echo "$mod_info" | jq -r '.data.name')
     mod_url=$(echo "$mod_info" | jq -r '.data.links.websiteUrl')
     file=$(curl -s -H "x-api-key: $API_KEY" \
-        "$API/mods/$id/files?gameVersionTypeId=$RETAIL_TYPE_ID&pageSize=1&sortField=2&sortOrder=desc" \
+        "$API/mods/$id/files?gameVersionTypeId=$GAME_VERSION_TYPE_ID&pageSize=1&sortField=2&sortOrder=desc" \
         | jq '.data[0]')
 
     if [[ "$file" == "null" || -z "$file" ]]; then
-        echo "[$mod_name] no retail file found, skipping"
+        echo "[$mod_name] no ${FLAVOR:-retail} file found, skipping"
         continue
     fi
 

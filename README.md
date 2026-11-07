@@ -16,8 +16,8 @@ present in the same directory as the script.
    ```
    echo -n "<your key>" > api-key
    ```
-6. Copy `config.example` to `config` and set `ADDONS_DIR` to your WoW
-   `_retail_/Interface/AddOns` path.
+6. Copy `config.example` to `config` and set `FLAVOR` (`retail`, `forever`, `classic`, `tbc`, `wrath`, `wrath-titan`, `cata` or `mop`) and `ADDONS_DIR` to your WoW
+   `_retail_/Interface/AddOns` or `_forever_/Interface/AddOns` path.
 7. Add addons to `addon-list`, one CurseForge Project ID per line. Find the
    Project ID on the addon's curseforge.com page, right sidebar under "About
    Project". Comments (`#`) are allowed.
@@ -30,7 +30,7 @@ present in the same directory as the script.
 ./update.sh
 ```
 
-For each addon in `addon-list`, this checks the latest Retail file and:
+For each addon in `addon-list`, this checks the latest file for your configured `FLAVOR` and:
 - downloads + installs it if it's new
 - reports "up to date" if you already have the latest
 - reports "update available" with a link to the CurseForge page if the

@@ -1,2 +1,4 @@
-# Copy this file to "config" and edit the path below.
+# Copy this file to "config" and edit the settings below.
+# WoW flavor to fetch addon files for: retail, forever, classic, tbc, wrath, wrath-titan, cata or mop
+FLAVOR="retail"
 ADDONS_DIR="$HOME/Games/WoW/World of Warcraft/_retail_/Interface/AddOns"
