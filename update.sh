@@ -33,6 +33,18 @@ fi
 
 [[ -f "$STATE_FILE" ]] || echo '{}' > "$STATE_FILE"
 
+# Replace (not overlay) the addon folders a zip contains, so files removed
+# upstream don't linger and corrupt the addon.
+install_zip() {
+    local zip="$1" top
+    unzip -tq "$zip" > /dev/null || { echo "corrupt zip: $zip" >&2; return 1; }
+    while IFS= read -r top; do
+        [[ -z "$top" || "$top" == "." || "$top" == ".." ]] && continue
+        rm -rf -- "${ADDONS_DIR:?}/$top"
+    done < <(unzip -Z1 "$zip" | cut -d/ -f1 | sort -u)
+    unzip -oq "$zip" -d "$ADDONS_DIR"
+}
+
 # Auto-detect addons already installed (e.g. dropped in by hand) that aren't
 # tracked yet, by reading the Project ID CurseForge stamps into their .toc.
 # Zips dropped next to the script are scanned too, so they get tracked.
@@ -92,7 +104,7 @@ while IFS= read -r line; do
         [[ ! -f "$local_zip" && -n "${DOWNLOADS_DIR:-}" ]] && local_zip="$DOWNLOADS_DIR/$file_name"
         if [[ -f "$local_zip" ]]; then
             echo "[$mod_name] installing $local_zip (file $file_id)"
-            unzip -oq "$local_zip" -d "$ADDONS_DIR"
+            install_zip "$local_zip"
             rm -f "$local_zip"
             jq --arg id "$id" --arg fid "$file_id" '.[$id] = $fid' "$STATE_FILE" > "$STATE_FILE.tmp"
             mv "$STATE_FILE.tmp" "$STATE_FILE"
@@ -107,7 +119,7 @@ while IFS= read -r line; do
 
     tmp_zip="$(mktemp --suffix=.zip)"
     curl -sf -L -o "$tmp_zip" "$download_url"
-    unzip -oq "$tmp_zip" -d "$ADDONS_DIR"
+    install_zip "$tmp_zip"
     rm -f "$tmp_zip"
 
     jq --arg id "$id" --arg fid "$file_id" '.[$id] = $fid' "$STATE_FILE" > "$STATE_FILE.tmp"
@@ -119,6 +131,6 @@ done < "$ADDONS_FILE"
 shopt -s nullglob
 for zip in "$DIR"/*.zip; do
     echo "[$(basename "$zip")] installing from local zip"
-    unzip -oq "$zip" -d "$ADDONS_DIR"
+    install_zip "$zip"
     rm -f "$zip"
 done
