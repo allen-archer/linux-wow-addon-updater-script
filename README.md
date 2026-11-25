@@ -33,9 +33,10 @@ present in the same directory as the script.
 For each addon in `addon-list`, this checks the latest file for your configured `FLAVOR` and:
 - downloads + installs it if it's new
 - reports "up to date" if you already have the latest
-- reports "update available" with a link to the CurseForge page if the
-  author has disabled third-party API downloads (you'll need to grab that
-  one manually)
+- if the author has disabled third-party API downloads: installs the latest
+  zip from `DOWNLOADS_DIR` if you've downloaded it there (and deletes it),
+  otherwise reports "update available" with a link to the CurseForge page
+  on every run until it's installed
 
 For each `.zip` file in the same directory as the script:
 - installs/updates the addon

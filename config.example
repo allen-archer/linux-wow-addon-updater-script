@@ -2,3 +2,6 @@
 # WoW flavor to fetch addon files for: retail, forever, classic, tbc, wrath, wrath-titan, cata or mop
 FLAVOR="retail"
 ADDONS_DIR="$HOME/Games/WoW/World of Warcraft/_retail_/Interface/AddOns"
+# Optional: where your browser saves downloads. Manual-only addons (author blocks API
+# downloads) are installed from here when the latest version's zip is present.
+DOWNLOADS_DIR="$HOME/Downloads"

@@ -35,6 +35,7 @@ fi
 
 # Auto-detect addons already installed (e.g. dropped in by hand) that aren't
 # tracked yet, by reading the Project ID CurseForge stamps into their .toc.
+# Zips dropped next to the script are scanned too, so they get tracked.
 declare -A known_ids
 while IFS= read -r line; do
     line="${line%%#*}"
@@ -44,14 +45,17 @@ done < "$ADDONS_FILE"
 
 shopt -s nullglob
 declare -A seen_new_ids
-for toc in "$ADDONS_DIR"/*/*.toc; do
-    pid=$(grep -im1 "curse-project-id" "$toc" | grep -oE "[0-9]+" || true)
-    [[ -z "$pid" ]] && continue
+for pid in $( {
+    grep -ihm1 "curse-project-id" "$ADDONS_DIR"/*/*.toc /dev/null || true
+    for zip in "$DIR"/*.zip; do
+        unzip -p "$zip" '*.toc' 2>/dev/null | grep -im1 "curse-project-id" || true
+    done
+} | grep -oE "[0-9]+" ); do
     [[ -n "${known_ids[$pid]:-}" || -n "${seen_new_ids[$pid]:-}" ]] && continue
     seen_new_ids["$pid"]=1
     new_name=$(curl -s -H "x-api-key: $API_KEY" "$API/mods/$pid" | jq -r '.data.name')
     echo "$pid # $new_name" >> "$ADDONS_FILE"
-    echo "[$new_name] new addon detected in AddOns, added to addon-list (id $pid)"
+    echo "[$new_name] new addon detected, added to addon-list (id $pid)"
 done
 
 while IFS= read -r line; do
@@ -83,12 +87,18 @@ while IFS= read -r line; do
     file_name=$(echo "$file" | jq -r '.fileName')
 
     if [[ "$download_url" == "null" || -z "$download_url" ]]; then
-        if [[ "$file_id" != "$known_id" ]]; then
-            echo "[$mod_name] update available: $file_name (download manually, author blocks API downloads) - $mod_url"
+        # ponytail: matches the exact CurseForge fileName; renamed downloads (e.g. "foo (1).zip") are missed
+        local_zip="$DIR/$file_name"
+        [[ ! -f "$local_zip" && -n "${DOWNLOADS_DIR:-}" ]] && local_zip="$DOWNLOADS_DIR/$file_name"
+        if [[ -f "$local_zip" ]]; then
+            echo "[$mod_name] installing $local_zip (file $file_id)"
+            unzip -oq "$local_zip" -d "$ADDONS_DIR"
+            rm -f "$local_zip"
             jq --arg id "$id" --arg fid "$file_id" '.[$id] = $fid' "$STATE_FILE" > "$STATE_FILE.tmp"
             mv "$STATE_FILE.tmp" "$STATE_FILE"
+            echo "[$mod_name] updated"
         else
-            echo "[$mod_name] up to date (file $file_id, manual download only)"
+            echo "[$mod_name] update available: $file_name (download manually, author blocks API downloads) - $mod_url"
         fi
         continue
     fi
